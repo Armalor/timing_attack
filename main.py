@@ -1,6 +1,10 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Depends
 
-app = FastAPI()
+# Локальный импорт:
+from common import Dependencies
+# ~Локальный импорт
+
+app = FastAPI(dependencies=[Depends(Dependencies.basic_auth_insecure)])
 
 
 @app.get("/")
