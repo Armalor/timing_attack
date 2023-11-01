@@ -1,6 +1,6 @@
 import requests
 from requests.auth import HTTPBasicAuth
-from base64 import b64encode, b64decode
+from time import perf_counter
 import json
 from pprint import pprint
 
@@ -20,23 +20,53 @@ host = 'http://127.0.0.1:80'
 
 url = f"{host}/"
 
-# auth = b64encode(f'{Dependencies.LOGIN}:{Dependencies.PASS}'.encode("ascii")).decode('ascii')
-#
-# response = requests.get(
-#     url,
-#     headers={"content-type": "application/json", "Authorization": f'Basic {auth}'},
-#     verify=False,
-# )
+tail = '1'*20
 
-response = requests.get(
+results = {}
+
+attempts = 2000
+border = attempts // 5
+
+session = requests.Session()
+
+response = session.get(
     url,
     headers={"content-type": "application/json"},
     verify=False,
-    auth=HTTPBasicAuth(Dependencies.LOGIN, Dependencies.PASS + '11')
+    auth=HTTPBasicAuth('11', '11')
 )
 
 
+# for code in range(ord('z'), ord('a') - 1, -1):
+for code in [ord('z'), ord('u')]:
+    letter = chr(code)
+
+    login = f'{letter}'
+
+    times = []
+    for att in range(attempts):
+        t0 = perf_counter()
+        response = session.get(
+            url,
+            headers={"content-type": "application/json"},
+            verify=False,
+            auth=HTTPBasicAuth(login, '11')
+        )
+        times.append(perf_counter() - t0)
+
+    len_t = len(times)
+    times.sort()
+    times = times[0:attempts-border]
+    t_sum = sum(times)
+
+    # results[letter] = f'{t_sum / attempts:.5f}'
+
+    # print(f'{login}: {t_sum / len_t:.3f}')
+    print(f'{login}: {t_sum}')
+
+
 print(response.status_code)
+pprint(results)
 
 content = response.content.decode()
 json_content = json.loads(content)
